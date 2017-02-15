@@ -1,0 +1,8 @@
+EMAIL: user@email.com
+QUERIES:
+shoes
+pants
+socks
+jcrew
+uniqlo
+alpha industries
