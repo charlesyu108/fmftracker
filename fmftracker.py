@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import urllib2
+import requests
 import smtplib
 from fmfConfig import * #Getting constants
 from glob import glob
@@ -7,8 +8,9 @@ from bs4 import BeautifulSoup
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-page = urllib2.urlopen(URL)
-soup = BeautifulSoup(page.read())
+headers = {'User-agent': 'Mozilla/5.0'}
+page = requests.get(URL, headers = headers).content
+soup = BeautifulSoup(page)
 listings = soup.body.find("div", {"id": "siteTable"})
 
 def getPosts():
