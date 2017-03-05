@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import urllib2
 import requests
 import smtplib
 from fmfConfig import * #Getting constants
@@ -19,13 +18,26 @@ def getPosts():
 
 		post = div.find("p", {"class":"title"})
 
+		item = []
+
 		if post is not None:
 			title = post.find('a')
 			link = title['href']
 			if link[0:3] ==  '/r/':
 				link = 'https://reddit.com' + link
-			frontpage += [(title.text, link)]
+			item += [title.text, link]
 
+		post = div.find("ul", {"class": "flat-list buttons"})
+
+		if post is not None:
+			comments = post.find("li", {"class": "first"}).find('a')
+			comments = comments['href']
+			if comments[0:3] ==  '/r/':
+				comments = 'https://reddit.com' + comments
+			item += [comments]
+
+		if len(item) > 0 :
+			frontpage += [tuple(item)]
 
 	return frontpage
 
@@ -48,10 +60,10 @@ def getQueries(file):
 def getMatches(posts, searches):
 	matches = {}
 
-	for title, url in posts:
+	for title, url, comments in posts:
 		for s in searches:
 			if s in title.lower():
-				matches[title] = url
+				matches[title] = (url, comments)
 	return matches
 
 #sends email alert
@@ -68,9 +80,11 @@ def sendEmail(email, queries, matches):
 	mtxt = ""
 	for item in queries:
 		q += item + ", "
-	for title, url in matches.iteritems():
-		m += "<b>" + title + "<b> (<a href = \" " + url + " \" >Link</a>) <br><br>"
-		mtxt += title + ", URL: " + url + "/n"
+
+	for title, data in matches.iteritems():
+		m += """<b> {} <b> (<a href = \"{}\">Link</a>) (<a href = \"{}\" >Discussion</a>)
+		<br> <br>""".format(title, data[0], data[1])
+		mtxt += title + ", URL: " + data[0] + ", Disccusion: " + data[1] + "/n"
 
 	html = """\
 	<html>
